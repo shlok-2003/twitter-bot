@@ -1,5 +1,9 @@
 import type { Metadata } from "next";
+
+import { AppSidebar } from "@/components/app-sidebar";
+import { ThemeProvider } from "@/components/ui/theme-provider";
 import AuthSessionProvider from "@/components/session-provider";
+import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 
 export const metadata: Metadata = {
     title: "Create Next App",
@@ -14,7 +18,22 @@ export default function RootLayout({
     return (
         <html lang="en">
             <body className="antialiased">
-                <AuthSessionProvider>{children}</AuthSessionProvider>
+                <AuthSessionProvider>
+                    <ThemeProvider
+                        attribute="class"
+                        defaultTheme="dark"
+                        enableSystem
+                        disableTransitionOnChange
+                    >
+                        <SidebarProvider>
+                            <AppSidebar />
+                            <main>
+                                <SidebarTrigger />
+                                {children}
+                            </main>
+                        </SidebarProvider>
+                    </ThemeProvider>
+                </AuthSessionProvider>
             </body>
         </html>
     );
