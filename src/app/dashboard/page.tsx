@@ -166,7 +166,9 @@ export default function Page() {
                                 </Avatar>
                                 <div className="flex-1">
                                     <div className="flex items-center space-x-2">
-                                        <h3 className="font-bold">User Name</h3>
+                                        <h3 className="font-bold">
+                                            {session.user?.profile?.data?.username}
+                                        </h3>
                                         <span className="text-sm text-muted-foreground">
                                             @{session?.user?.name}
                                         </span>

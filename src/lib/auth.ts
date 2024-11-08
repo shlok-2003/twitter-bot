@@ -8,30 +8,22 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
             clientSecret: process.env.AUTH_TWITTER_SECRET,
         }),
     ],
-    pages: {
-        signIn: "/sign-in",
-    },
     callbacks: {
         authorized: async ({ auth }) => {
             return !!auth;
         },
-        jwt: async ({ token, account, profile, user }) => {
-            // if (user) {
-            //     token.id = user.id;
-            // }
+        jwt: async ({ token, profile }) => {
+            if (profile) {
+                token.profile = profile;
+            }
 
-            console.log({ token, account, profile, user });
             return token;
         },
-        session: async ({ session }) => {
-            // if (token.sub && session.user) {
-            //     session.user.id = token.sub;
-            // }
+        session: async ({ session, token }) => {
+            if (token.profile) {
+                session.user.profile = token.profile;
+            }
             return session;
-        },
-        signIn: async ({ user, account, profile, email, credentials }) => {
-            console.log({ user, account, profile, email, credentials });
-            return true;
-        },
+        }
     },
 });
