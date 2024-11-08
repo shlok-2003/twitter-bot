@@ -7,7 +7,7 @@ export default function Page() {
         <main>
             This is the dashboard
 
-            <pre>{JSON.stringify(session, null, 2)}</pre>
+            {session?.user?.name}
         </main>
     );
 }
