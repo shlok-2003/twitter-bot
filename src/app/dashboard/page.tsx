@@ -84,11 +84,10 @@ export default function Page() {
                         onClick={() => {
                             navigator.clipboard.writeText(tweet);
                             setTextCopied(true);
-                            const timer = setTimeout(() => {
+                            setTimeout(() => {
                                 setTextCopied(false);
                             }, 500);
 
-                            return () => clearTimeout(timer);
                         }}
                     >
                         {textCopied ? (
