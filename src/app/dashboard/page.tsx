@@ -1,7 +1,7 @@
 "use client";
 
-import { useState } from "react";
-import { Heart, MessageCircle, Repeat2, Share } from "lucide-react";
+import { useEffect, useState } from "react";
+import { Heart, MessageCircle, Repeat2, Share, Copy, Check } from "lucide-react";
 
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
@@ -25,28 +25,30 @@ import {
 } from "@/components/ui/select";
 import { Avatar, AvatarImage } from "@/components/ui/avatar";
 
-import { useAuthenticates } from "@/hooks/use-authenicate";
+import { toast } from "@/hooks/use-toast";
+import { useAuthenticates } from "@/hooks/use-authenticate";
 
 import { LanguageOptions } from "@/lib/utils";
 import { generateTweet } from "@/lib/actions/gemini.actions";
 
 type TLanguage = (typeof LanguageOptions)[number];
+type TGenerating = "false" | "true" | "done";
 
 export default function Page() {
     const { session, status } = useAuthenticates();
 
     const [language, setLanguage] = useState<TLanguage>("English");
-    const [style, setStyle] = useState("");
-    const [description, setDescription] = useState("");
-    const [keywords, setKeywords] = useState("");
-    const [tweet, setTweet] = useState("");
+    const [style, setStyle] = useState<string>("");
+    const [description, setDescription] = useState<string>("");
+    const [keywords, setKeywords] = useState<string>("");
+    const [tweet, setTweet] = useState<string>("");
 
-    const [generating, setGenerating] = useState<"false" | "true" | "done">(
-        "false",
-    );
+    const [textCopied, setTextCopied] = useState<boolean>(false);
+    const [generating, setGenerating] = useState<TGenerating>("false");
 
     const handleGenerateTweet = async (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault(); 
+
         setGenerating("true");
         try {
             const tweet = await generateTweet({
@@ -58,6 +60,11 @@ export default function Page() {
             setTweet(tweet);
         } catch (error) {
             console.error(error);
+            toast({
+                title: "Error generating tweet",
+                description: "Please try again later",
+                variant: "destructive",
+            });
         } finally {
             setGenerating("done");
         }
@@ -70,7 +77,26 @@ export default function Page() {
     return (
         <div className="min-h-screen font-open-sans">
             <div className="container mx-auto p-4 bg-background text-foreground min-h-screen flex flex-col gap-5">
-                <Card className="w-full max-w-2xl mx-auto">
+                <Card className="w-full max-w-2xl mx-auto relative">
+                    <Button
+                        variant="ghost"
+                        className="absolute top-2 right-2"
+                        onClick={() => {
+                            navigator.clipboard.writeText(tweet);
+                            setTextCopied(true);
+                            const timer = setTimeout(() => {
+                                setTextCopied(false);
+                            }, 500);
+
+                            return () => clearTimeout(timer);
+                        }}
+                    >
+                        {textCopied ? (
+                            <Check className="w-5 h-5" />
+                        ) : (
+                            <Copy className="w-5 h-5" />
+                        )}
+                    </Button>
                     <form onSubmit={handleGenerateTweet}>
                         <CardHeader>
                             <CardTitle className="text-2xl font-bold">
