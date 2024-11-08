@@ -15,6 +15,7 @@ export default function Page() {
             This is the dashboard
 
             {session.user?.name}
+            {session.user?.name}
         </main>
     );
 }
