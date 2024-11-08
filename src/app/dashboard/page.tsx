@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { Heart, MessageCircle, Repeat2, Share, Copy, Check } from "lucide-react";
 
 import { Label } from "@/components/ui/label";
