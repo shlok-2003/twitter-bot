@@ -18,7 +18,7 @@ export const generateTweet = async ({
     keywords,
 }: GenerateTweetProps): Promise<string> => {
     const model = gemini.getGenerativeModel({
-        model: "gemini-1.5-flash",
+        model: "gemini-1.5-pro",
         generationConfig: {
             responseMimeType: "text/plain",
         },
