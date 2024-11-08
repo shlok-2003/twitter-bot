@@ -37,6 +37,5 @@ export const generateTweet = async ({
 
     const result = response.response;
     console.log(result.text());
-
     return result.text();
 };
