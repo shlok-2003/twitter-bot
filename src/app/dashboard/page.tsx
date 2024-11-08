@@ -45,7 +45,8 @@ export default function Page() {
         "false",
     );
 
-    const handleGenerateTweet = async () => {
+    const handleGenerateTweet = async (e: React.FormEvent<HTMLFormElement>) => {
+        e.preventDefault(); 
         setGenerating("true");
         try {
             const tweet = await generateTweet({
