@@ -16,7 +16,7 @@ export const useAuthenticates = () => {
             });
 
             await new Promise((resolve) => setTimeout(resolve, 400));
-            router.replace("/auth/sign-in");
+            router.replace("/api/auth/signin");
         },
     });
 
