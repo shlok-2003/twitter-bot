@@ -26,5 +26,9 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
             // }
             return session;
         },
+        signIn: async ({ user, account, profile, email, credentials }) => {
+            console.log({ user, account, profile, email, credentials });
+            return true;
+        },
     },
 });
