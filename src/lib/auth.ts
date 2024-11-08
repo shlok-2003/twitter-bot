@@ -8,6 +8,9 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
             clientSecret: process.env.AUTH_TWITTER_SECRET,
         }),
     ],
+    pages: {
+        signIn: "/sign-in",
+    },
     callbacks: {
         authorized: async ({ auth }) => {
             return !!auth;
