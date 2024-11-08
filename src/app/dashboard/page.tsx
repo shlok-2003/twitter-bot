@@ -30,11 +30,12 @@ import { useAuthenticates } from "@/hooks/use-authenicate";
 import { LanguageOptions } from "@/lib/utils";
 import { generateTweet } from "@/lib/actions/gemini.actions";
 
+type TLanguage = (typeof LanguageOptions)[number];
+
 export default function Page() {
     const { session, status } = useAuthenticates();
 
-    const [language, setLanguage] =
-        useState<(typeof LanguageOptions)[number]>("English");
+    const [language, setLanguage] = useState<TLanguage>("English");
     const [style, setStyle] = useState("");
     const [description, setDescription] = useState("");
     const [keywords, setKeywords] = useState("");
@@ -69,74 +70,83 @@ export default function Page() {
         <div className="min-h-screen font-open-sans">
             <div className="container mx-auto p-4 bg-background text-foreground min-h-screen flex flex-col gap-5">
                 <Card className="w-full max-w-2xl mx-auto">
-                    <CardHeader>
-                        <CardTitle className="text-2xl font-bold">
-                            Tweet Generator
-                        </CardTitle>
-                    </CardHeader>
-                    <CardContent className="space-y-4">
-                        <div className="space-y-2">
-                            <Label htmlFor="language">Language</Label>
-                            <Select
-                                value={language}
-                                onValueChange={(value) =>
-                                    setLanguage(value as typeof LanguageOptions[number])
-                                }
+                    <form onSubmit={handleGenerateTweet}>
+                        <CardHeader>
+                            <CardTitle className="text-2xl font-bold">
+                                Tweet Generator
+                            </CardTitle>
+                        </CardHeader>
+                        <CardContent className="space-y-4">
+                            <div className="space-y-2">
+                                <Label htmlFor="language">Language</Label>
+                                <Select
+                                    value={language}
+                                    onValueChange={(value) =>
+                                        setLanguage(value as TLanguage)
+                                    }
+                                >
+                                    <SelectTrigger className="w-full">
+                                        <SelectValue placeholder="Select a language" />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        {LanguageOptions.map((lang) => (
+                                            <SelectItem key={lang} value={lang}>
+                                                {lang}
+                                            </SelectItem>
+                                        ))}
+                                    </SelectContent>
+                                </Select>
+                            </div>
+                            <div className="space-y-2">
+                                <Label htmlFor="style">Style of Writing</Label>
+                                <Input
+                                    id="style"
+                                    placeholder="Enter writing style"
+                                    value={style}
+                                    required
+                                    onChange={(e) => setStyle(e.target.value)}
+                                />
+                            </div>
+                            <div className="space-y-2">
+                                <Label htmlFor="description">Description</Label>
+                                <Textarea
+                                    id="description"
+                                    placeholder="Enter tweet description"
+                                    value={description}
+                                    required
+                                    onChange={(e) =>
+                                        setDescription(e.target.value)
+                                    }
+                                />
+                            </div>
+                            <div className="space-y-2">
+                                <Label htmlFor="keywords">
+                                    Keywords (comma-separated)
+                                </Label>
+                                <Input
+                                    id="keywords"
+                                    placeholder="Enter keywords"
+                                    value={keywords}
+                                    required
+                                    onChange={(e) =>
+                                        setKeywords(e.target.value)
+                                    }
+                                />
+                            </div>
+                        </CardContent>
+                        <CardFooter className="flex flex-col items-start space-y-4">
+                            <Button
+                                disabled={generating === "true"}
+                                type="submit"
                             >
-                                <SelectTrigger className="w-full">
-                                    <SelectValue placeholder="Select a language" />
-                                </SelectTrigger>
-                                <SelectContent>
-                                    {LanguageOptions.map((lang) => (
-                                        <SelectItem key={lang} value={lang}>
-                                            {lang}
-                                        </SelectItem>
-                                    ))}
-                                </SelectContent>
-                            </Select>
-                        </div>
-                        <div className="space-y-2">
-                            <Label htmlFor="style">Style of Writing</Label>
-                            <Input
-                                id="style"
-                                placeholder="Enter writing style"
-                                value={style}
-                                onChange={(e) => setStyle(e.target.value)}
-                            />
-                        </div>
-                        <div className="space-y-2">
-                            <Label htmlFor="description">Description</Label>
-                            <Textarea
-                                id="description"
-                                placeholder="Enter tweet description"
-                                value={description}
-                                onChange={(e) => setDescription(e.target.value)}
-                            />
-                        </div>
-                        <div className="space-y-2">
-                            <Label htmlFor="keywords">
-                                Keywords (comma-separated)
-                            </Label>
-                            <Input
-                                id="keywords"
-                                placeholder="Enter keywords"
-                                value={keywords}
-                                onChange={(e) => setKeywords(e.target.value)}
-                            />
-                        </div>
-                    </CardContent>
-                    <CardFooter className="flex flex-col items-start space-y-4">
-                        <Button
-                            // disabled={generating === "true"}
-                            onClick={handleGenerateTweet}
-                        >
-                            {generating === "true" ? (
-                                <Loading />
-                            ) : (
-                                "Generate Tweet"
-                            )}
-                        </Button>
-                    </CardFooter>
+                                {generating === "true" ? (
+                                    <Loading />
+                                ) : (
+                                    "Generate Tweet"
+                                )}
+                            </Button>
+                        </CardFooter>
+                    </form>
                 </Card>
 
                 {generating === "done" && (

@@ -11,21 +11,20 @@ import {
     SidebarMenuItem,
 } from "@/components/ui/sidebar";
 
-// Menu items.
 const items = [
     {
         title: "Compose a Tweet",
-        url: "/",
+        url: "/dashboard/",
         icon: Home,
     },
     {
         title: "Schedule a Tweet",
-        url: "/schedule",
+        url: "/dashboard/schedule",
         icon: CalendarCheck2,
     },
     {
         title: "Logout",
-        url: "/logout",
+        url: "/api/auth/signout",
         icon: LogOut,
     },
 ];
