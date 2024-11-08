@@ -4,9 +4,9 @@ import { redirect } from "next/navigation";
 export default async function Home() {
     const session = await auth();
 
-    // if (!session || !session?.user) {
-    //     redirect("/api/auth/signin");
-    // }
+    if (!session || !session?.user) {
+        redirect("/api/auth/signin");
+    }
 
     return redirect("/dashboard");
 }

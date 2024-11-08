@@ -1,6 +1,8 @@
+"use server";
+
 import { GoogleGenerativeAI } from "@google/generative-ai";
 
-const gemini = new GoogleGenerativeAI(process.env.NEXT_PUBLIC_GEMINI_API_KEY as string);
+const gemini = new GoogleGenerativeAI(process.env.GEMINI_API_KEY as string);
 
 interface GenerateTweetProps {
     language: string;
@@ -15,7 +17,6 @@ export const generateTweet = async ({
     description,
     keywords,
 }: GenerateTweetProps) => {
-    console.log(process.env.NEXT_PUBLIC_GEMINI_API_KEY);
     const model = gemini.getGenerativeModel({
         model: "gemini-1.5-flash",
         generationConfig: {
