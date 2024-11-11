@@ -1,101 +1,383 @@
-import Image from "next/image";
+"use client";
 
-export default function Home() {
-  return (
-    <div className="grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20 font-[family-name:var(--font-geist-sans)]">
-      <main className="flex flex-col gap-8 row-start-2 items-center sm:items-start">
-        <Image
-          className="dark:invert"
-          src="https://nextjs.org/icons/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol className="list-inside list-decimal text-sm text-center sm:text-left font-[family-name:var(--font-geist-mono)]">
-          <li className="mb-2">
-            Get started by editing{" "}
-            <code className="bg-black/[.05] dark:bg-white/[.06] px-1 py-0.5 rounded font-semibold">
-              src/app/page.tsx
-            </code>
-            .
-          </li>
-          <li>Save and see your changes instantly.</li>
-        </ol>
+import React, { useState } from "react";
+import {
+    MessageCircle,
+    Repeat,
+    Heart,
+    ArrowLeft,
+    ArrowRight,
+    RefreshCw,
+} from "lucide-react";
+import { Button } from "@/components/ui/button";
+import {
+    Card,
+    CardContent,
+    CardFooter,
+    CardHeader,
+    CardTitle,
+} from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import {
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
+} from "@/components/ui/select";
+import { Slider } from "@/components/ui/slider";
+import { Textarea } from "@/components/ui/textarea";
+import { ModeToggle } from "@/components/theme-toggle";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import Information from "@/components/information";
+import { Skeleton } from "@/components/ui/skeleton";
+import { generateSimilarTweet, generateTweet } from "@/lib/genai";
+import { toast } from "@/hooks/use-toast";
 
-        <div className="flex gap-4 items-center flex-col sm:flex-row">
-          <a
-            className="rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="https://nextjs.org/icons/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
-            />
-            Deploy now
-          </a>
-          <a
-            className="rounded-full border border-solid border-black/[.08] dark:border-white/[.145] transition-colors flex items-center justify-center hover:bg-[#f2f2f2] dark:hover:bg-[#1a1a1a] hover:border-transparent text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 sm:min-w-44"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Read our docs
-          </a>
+const styles = [
+    "Professional",
+    "Casual",
+    "Humorous",
+    "Informative",
+    "Inspirational",
+    "Controversial",
+    "Sarcastic",
+    "Formal",
+    "Friendly",
+    "Persuasive",
+] as const;
+
+const languages = [
+    "English",
+    "Spanish",
+    "Chinese",
+    "Tagalog",
+    "Vietnamese",
+    "French",
+    "Arabic",
+    "Korean",
+    "Russian",
+    "German",
+    "Haitian Creole",
+    "Portuguese",
+    "Italian",
+    "Hindi",
+    "Polish",
+    "Japanese",
+    "Urdu",
+    "Persian",
+    "Gujarati",
+    "Telugu",
+];
+
+type Style = (typeof styles)[number];
+type Language = (typeof languages)[number];
+
+export default function TweetGenerator() {
+    const [style, setStyle] = useState<Style>("Formal");
+    const [language, setLanguage] = useState<Language>("English");
+    const [description, setDescription] = useState<string>("");
+    const [keywords, setKeywords] = useState<string>("");
+    const [hashtagCount, setHashtagCount] = useState<number>(3);
+    const [generatedTweets, setGeneratedTweets] = useState<string[]>([]);
+    const [currentTweetIndex, setCurrentTweetIndex] = useState<number>(0);
+    const [isLoading, setIsLoading] = useState<boolean>(false);
+
+    const handleGenerate = async (e: React.FormEvent<HTMLFormElement>) => {
+        e.preventDefault();
+        setIsLoading(true);
+
+        try {
+            const response = await generateTweet({
+                style,
+                language,
+                description,
+                keywords,
+                hashtagCount,
+            });
+
+            setGeneratedTweets((prev) => [...prev, response]);
+            setCurrentTweetIndex(generatedTweets.length);
+        } catch (error) {
+            console.error(error);
+            toast({
+                title: "Error",
+                description: "Failed to generate tweet",
+            });
+        } finally {
+            setIsLoading(false);
+        }
+    };
+
+    const handleGenerateSimilar = async () => {
+        setIsLoading(true);
+        
+        try {
+            const currentTweet = generatedTweets[currentTweetIndex];
+            const response = await generateSimilarTweet({
+                style,
+                language,
+                description,
+                keywords,
+                hashtagCount,
+                currentTweet,
+            });
+
+            setGeneratedTweets((prev) => [...prev, response]);
+            setCurrentTweetIndex(generatedTweets.length);
+        } catch (error) {
+            console.error(error);
+            toast({
+                title: "Error",
+                description: "Failed to generate similar tweet",
+            });
+        } finally {
+            setIsLoading(false);
+        }
+    };
+
+    const currentTweet = generatedTweets[currentTweetIndex];
+
+    return (
+        <div className="min-h-screen bg-background font-openSans">
+            <div className="container mx-auto p-4">
+                <div className="flex justify-end mb-4">
+                    <ModeToggle />
+                </div>
+                <div className="flex flex-col lg:flex-row gap-4">
+                    <form
+                        onSubmit={handleGenerate}
+                        className="w-full lg:w-1/2"
+                    >
+                        <Card>
+                            <CardHeader>
+                                <CardTitle>AI Tweet Generator</CardTitle>
+                            </CardHeader>
+                            <CardContent className="space-y-4">
+                                <div className="space-y-2">
+                                    <Label htmlFor="style">
+                                        Step 1: Select your style
+                                    </Label>
+                                    <Select
+                                        value={style}
+                                        onValueChange={(value: Style) =>
+                                            setStyle(value)
+                                        }
+                                        required
+                                    >
+                                        <SelectTrigger id="style">
+                                            <SelectValue placeholder="Select style" />
+                                        </SelectTrigger>
+                                        <SelectContent>
+                                            <ScrollArea className="h-64">
+                                                {styles.map((s) => (
+                                                    <SelectItem
+                                                        key={s}
+                                                        value={s}
+                                                    >
+                                                        {s}
+                                                    </SelectItem>
+                                                ))}
+                                            </ScrollArea>
+                                        </SelectContent>
+                                    </Select>
+                                </div>
+                                <div className="space-y-2">
+                                    <Label htmlFor="language">
+                                        Step 2: Select your language
+                                    </Label>
+                                    <Select
+                                        value={language}
+                                        onValueChange={(value: Language) =>
+                                            setLanguage(value)
+                                        }
+                                        required
+                                    >
+                                        <SelectTrigger id="language">
+                                            <SelectValue placeholder="Select language" />
+                                        </SelectTrigger>
+                                        <SelectContent>
+                                            <ScrollArea className="h-64">
+                                                {languages.map((l) => (
+                                                    <SelectItem
+                                                        key={l}
+                                                        value={l}
+                                                    >
+                                                        {l}
+                                                    </SelectItem>
+                                                ))}
+                                            </ScrollArea>
+                                        </SelectContent>
+                                    </Select>
+                                </div>
+                                <div className="space-y-2">
+                                    <Label htmlFor="description">
+                                        Step 3: Add a short description
+                                    </Label>
+                                    <Textarea
+                                        id="description"
+                                        value={description}
+                                        onChange={(e) =>
+                                            setDescription(e.target.value)
+                                        }
+                                        placeholder="Enter a brief description of your tweet"
+                                        required
+                                    />
+                                </div>
+                                <div className="space-y-2">
+                                    <Label htmlFor="keywords">
+                                        Step 4: Add your keywords
+                                    </Label>
+                                    <Input
+                                        id="keywords"
+                                        value={keywords}
+                                        onChange={(e) =>
+                                            setKeywords(e.target.value)
+                                        }
+                                        placeholder="Enter keywords separated by commas"
+                                        required
+                                    />
+                                </div>
+                                <div className="space-y-2">
+                                    <Label htmlFor="hashtags">
+                                        Number of hashtags: {hashtagCount}
+                                    </Label>
+                                    <Slider
+                                        id="hashtags"
+                                        min={0}
+                                        max={5}
+                                        step={1}
+                                        value={[hashtagCount]}
+                                        onValueChange={(value) =>
+                                            setHashtagCount(value[0])
+                                        }
+                                    />
+                                </div>
+                            </CardContent>
+                            <CardFooter>
+                                <Button
+                                    disabled={isLoading}
+                                    className="w-full"
+                                    type="submit"
+                                >
+                                    {isLoading
+                                        ? "Generating..."
+                                        : "Generate Tweet"}
+                                </Button>
+                            </CardFooter>
+                        </Card>
+                    </form>
+
+                    <Card className="w-full lg:w-1/2">
+                        <CardHeader>
+                            <CardTitle>Generated Tweet</CardTitle>
+                        </CardHeader>
+                        <CardContent>
+                            {isLoading ? (
+                                <div className="flex justify-center items-center h-64">
+                                    <div className="animate-spin rounded-full h-32 w-32 border-t-2 border-b-2 border-primary"></div>
+                                </div>
+                            ) : currentTweet ? (
+                                <div className="border rounded-lg p-4 space-y-4">
+                                    <div className="flex items-center space-x-2">
+                                        <Skeleton className="size-10 rounded-full" />
+
+                                        <div className="flex items-center space-x-2">
+                                            <div>
+                                                <p className="font-bold">
+                                                    AI Tweet Generator
+                                                </p>
+                                                <p className="text-sm text-muted-foreground">
+                                                    @AITweetGen
+                                                </p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <p>{currentTweet}</p>
+                                    <div className="flex justify-between text-muted-foreground">
+                                        <Button
+                                            variant="ghost"
+                                            size="sm"
+                                            className="flex items-center space-x-2"
+                                        >
+                                            <MessageCircle className="h-5 w-5" />
+                                            <span>0</span>
+                                        </Button>
+                                        <Button
+                                            variant="ghost"
+                                            size="sm"
+                                            className="flex items-center space-x-2"
+                                        >
+                                            <Repeat className="h-5 w-5" />
+                                            <span>0</span>
+                                        </Button>
+                                        <Button
+                                            variant="ghost"
+                                            size="sm"
+                                            className="flex items-center space-x-2"
+                                        >
+                                            <Heart className="h-5 w-5" />
+                                            <span>0</span>
+                                        </Button>
+                                    </div>
+                                    <p className="text-sm text-muted-foreground">
+                                        Character count: {currentTweet.length}
+                                    </p>
+                                </div>
+                            ) : (
+                                <p className="text-center text-muted-foreground">
+                                    Your generated tweet will appear here
+                                </p>
+                            )}
+                        </CardContent>
+                        <CardFooter className="flex justify-between">
+                            <Button
+                                onClick={() =>
+                                    setCurrentTweetIndex(
+                                        Math.max(0, currentTweetIndex - 1),
+                                    )
+                                }
+                                disabled={currentTweetIndex === 0 || isLoading}
+                                variant="outline"
+                            >
+                                <ArrowLeft className="mr-2 h-4 w-4" />
+                                Previous
+                            </Button>
+                            <Button
+                                onClick={handleGenerateSimilar}
+                                disabled={!currentTweet || isLoading}
+                                variant="outline"
+                            >
+                                <RefreshCw className="mr-2 h-4 w-4" />
+                                Generate Similar
+                            </Button>
+                            <Button
+                                onClick={() =>
+                                    setCurrentTweetIndex(
+                                        Math.min(
+                                            generatedTweets.length - 1,
+                                            currentTweetIndex + 1,
+                                        ),
+                                    )
+                                }
+                                disabled={
+                                    currentTweetIndex ===
+                                        generatedTweets.length - 1 ||
+                                    isLoading ||
+                                    generatedTweets.length === 0
+                                }
+                                variant="outline"
+                            >
+                                Next
+                                <ArrowRight className="ml-2 h-4 w-4" />
+                            </Button>
+                        </CardFooter>
+                    </Card>
+                </div>
+
+                <Information />
+            </div>
         </div>
-      </main>
-      <footer className="row-start-3 flex gap-6 flex-wrap items-center justify-center">
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="https://nextjs.org/icons/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
-          />
-          Learn
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="https://nextjs.org/icons/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="https://nextjs.org/icons/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to nextjs.org →
-        </a>
-      </footer>
-    </div>
-  );
+    );
 }
